@@ -1,8 +1,6 @@
-ARG CUDA_IMAGE=nvidia/cuda:9.0-runtime
+ARG CUDA_IMAGE=nvidia/cuda:12.4.1-base-ubuntu22.04
+
 FROM ${CUDA_IMAGE}
-
-ARG DOCKER_CE_VERSION=5:18.09.1~3-0~ubuntu-xenial
-
 
 RUN apt-get update -q && \
     apt-get install -yq \
@@ -16,18 +14,16 @@ RUN apt-get update -q && \
        "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
        $(lsb_release -cs) \
        stable"  && \
-    apt-get update -q && apt-get install -yq docker-ce=${DOCKER_CE_VERSION} docker-ce-cli=${DOCKER_CE_VERSION} containerd.io
+    apt-get update -q && apt-get install -yq docker-ce docker-ce-cli containerd.io
 
-# https://github.com/docker/docker/blob/master/project/PACKAGERS.md#runtime-dependencies
 RUN set -eux; \
     apt-get update -q && \
 	apt-get install -yq \
-		btrfs-tools \
+		btrfs-progs \
 		e2fsprogs \
 		iptables \
 		xfsprogs \
 		xz-utils \
-# pigz: https://github.com/moby/moby/pull/35697 (faster gzip implementation)
 		pigz \
         zfs \
 		wget
@@ -50,16 +46,23 @@ RUN set -eux; \
 
 ##### Install nvidia docker #####
 # Add the package repositories
-RUN curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | \
-    apt-key add - && \
-    distribution=$(. /etc/os-release;echo $ID$VERSION_ID) && \
-    curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | \
-      tee /etc/apt/sources.list.d/nvidia-docker.list && \
-    apt-get update -qq && \
-    apt-get install -yq nvidia-docker2 && \
-    sed -i '2i \ \ \ \ "default-runtime": "nvidia",' /etc/docker/daemon.json
+RUN curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add --no-tty -
 
+RUN distribution=$(. /etc/os-release;echo $ID$VERSION_ID) && \
+    curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | \
+      tee /etc/apt/sources.list.d/nvidia-docker.list
+      
+RUN apt-get update -qq && \
+    apt-get install -yq nvidia-docker2 && \
+    apt-get clean
+
+
+RUN sed -i '2i \ \ \ \ "default-runtime": "nvidia",' /etc/docker/daemon.json
+
+RUN mkdir -p /usr/local/bin/
 COPY dockerd-entrypoint.sh /usr/local/bin/
+RUN chmod 777 /usr/local/bin/dockerd-entrypoint.sh
+RUN ln -s /usr/local/bin/dockerd-entrypoint.sh /
 
 VOLUME /var/lib/docker
 EXPOSE 2375
