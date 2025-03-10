@@ -2,6 +2,8 @@ ARG CUDA_IMAGE=nvidia/cuda:12.4.1-base-ubuntu22.04
 
 FROM ${CUDA_IMAGE}
 
+ENV NVIDIA_VISIBLE_DEVICES=all
+
 RUN apt-get update -q && \
     apt-get install -yq \
         apt-transport-https \
@@ -25,7 +27,6 @@ RUN set -eux; \
 		xfsprogs \
 		xz-utils \
 		pigz \
-        zfs \
 		wget
 
 
