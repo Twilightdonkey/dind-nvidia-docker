@@ -5,19 +5,19 @@ Use nvidia-docker inside a container.
 
 ## Requirements
 
-[nvidia-docker](https://github.com/NVIDIA/nvidia-docker) is required on the host machine.
+[nvidia container toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) is required on the host machine.
 
 
 ## Building image
 
-You can either pull the image `henderake/dind:nvidia-docker` or build the image by yourself with the following command:  
+You can either pull the image `mrdavoy/dind:nvidia-docker` or build the image by yourself with the following command:  
 ```shell
-  $ nvidia-docker build -t dind:nvidia-docker .
+  $ docker build -t dind:nvidia-docker .
 ```
 
-CUDA version and Docker version and be specified with --build-arg:
+CUDA version and be specified with --build-arg:
 ```shell
-  $ nvidia-docker build -t dind:nvidia-docker --build-arg CUDA_IMAGE=nvidia/cuda:9.0-runtime --build-arg DOCKER_CE_VERSION=5:18.09.1~3-0~ubuntu-xenial .
+  $ docker build -t dind:nvidia-docker --build-arg CUDA_IMAGE=nvidia/cuda:9.0-runtime
 ```
 
 
@@ -37,4 +37,5 @@ You can also connect a second container to `dind:nvidia-docker`. Refer to [offic
 
 
 ## Acknowledgement
+Forked from [https://github.com/divergent3d/dind-nvidia-docker]{https://github.com/divergent3d/dind-nvidia-docker}
 The dind part of this Dockerfile is copied from [https://github.com/docker-library/docker/tree/master/18.09/dind](https://github.com/docker-library/docker/tree/master/18.09/dind)
